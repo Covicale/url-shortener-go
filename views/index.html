@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="favicon.svg" type="image/x-icon" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Home</title>
+  </head>
+  <body class="bg-gray-900 px-4 pt-8 pb-4">
+    <!-- Create a simple if the user is not logged to log in landing page -->
+    <div class="flex relative flex-col gap-y-4 max-w-[100ch] mx-auto items-center justify-center min-h-screen">
+      <div class="w-full text-center">
+        <h1 class="text-2xl md:text-5xl font-bold text-white">GO-SHORTEN-URL</h1>
+        {{ if not .User.Username }}
+        <!-- Create two links with login and register -->
+        <h2 class="text-lg md:text-3xl font-bold text-white">Need to be registered to use it 😴</h2>
+        <div class="mt-5">
+          <a
+            href="/auth/login"
+            class="text-white transition-all ease-in 0.5 border-2 focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 bg-gray-800 hover:bg-gray-700 focus:ring-gray-700 border-gray-700 hover:border-gray-500"
+            >Log In</a
+          >
+          <a
+            href="/auth/register"
+            class="text-white transition-all ease-in 0.5 border-2 focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 bg-gray-800 hover:bg-gray-700 focus:ring-gray-700 border-gray-700 hover:border-gray-500"
+            >Register</a
+          >
+        </div>
+      </div>
+
+      {{ else }}
+        <h2 class="text-xl md:text-3xl font-bold text-white">Welcome {{ .User.Username }} 👋</h2>
+        <div class="relative">
+          <label for="url" class="text-xl font-semibold text-white block mt-5">Enter your URL here:</label>
+          <input
+            type="text"
+            id="url"
+            class="w-full px-4 py-2 mt-2 border border-gray-300 rounded"
+          />
+        </div>
+        <div id="shorten-div" class="w-full bg-gray-800 hidden flex items-center px-4 py-2 rounded-md justify-between mt-3 bg-">
+          <p class="text-white" id="shorten-result"></p>
+          <button id="shorten-link-copy" disabled>📋</button>
+        </div>
+        <div class="w-full flex items-center justify-center mt-3 gap-x-2">
+          <button
+            id="shorten-btn"
+            class="transition-all ease-in 0.5 text-white focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 bg-gray-800 hover:bg-gray-700 focus:ring-gray-700 border-gray-700"
+          >
+            Short the URL
+          </button>
+          <button
+            id="logout-btn"
+            class="text-white focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 bg-gray-800 hover:bg-gray-700 focus:ring-gray-700 border-gray-700"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Div section to see the urls that the user has -->
+      <div class="overflow-x max-w-[100ch] shadow-md">
+        <table
+          class="table-fixed text-sm text-left rtl:text-right w-full text-gray-400"
+        >
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr class=" rounded-md">
+              <th class="p-2 rounded-tl-md border-r">Original URL</th>
+              <th class="p-2 border-r">Short URL</th>
+              <th class="p-2 rounded-tr-md md:w-24">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="shorten-table-body" class="mx-4">
+            {{ range .URLS }}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="p-2 underline overflow-x-auto">
+                <a target="_blank" href="{{ .LongURL }}">{{ .LongURL }}</a>
+              </td>
+              <td class="pr-4 p-2 overflow-x-auto underline">
+                <a target="_blank" href={{ $.Domain }}/{{ .ShortURL }}>{{ $.Domain }}/{{ .ShortURL }} </a>
+              </td>
+              <td class="p-2 text-center">
+                <button onclick="removeShortenURL(event)"
+                  class="text-white focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-4 py-2 bg-gray-700 hover:bg-gray-500 focus:ring-gray-600 border-gray-600"
+            >
+                  Delete
+                </button>
+              </td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+      {{ end }}
+    </div>
+    <footer class="flex flex-col md:flex-row md:gap-x-2 justify-center items-center text-center border-t-2 border-gray-500 text-gray-400 py-4">
+      <span class="text-sm">Created with PostgreSQL and Golang by <a target="_blank" href="https://www.covicale.com/ " class="text-blue-400 font-bold">Covicale</a></span>
+      <span class="invisible md:visible text-sm">|</span>
+      <span class="text-sm">Repository can be found <a target="_blank" href="https://github.com/covicale/url-shortener-go" class="text-blue-400 font-bold">here</a></span>
+    </footer>
+  </body>
+</html>
+
+<script>
+
+  const logoutBtn = document.getElementById("logout-btn");
+  const shortenBtn = document.getElementById("shorten-btn");
+  const shortenDiv = document.getElementById("shorten-div");
+  const shortenResult = document.getElementById("shorten-result");
+  const shortenCopyBtn = document.getElementById("shorten-link-copy");
+  const shortenTableBody = document.getElementById("shorten-table-body");
+  const shortenDeleteButtons = document.getElementsByClassName("delete-shorten-btn");
+
+  const logoutHandler = async () => {
+    try {
+      const response = await fetch("/api/v1/auth/logout", {
+        method: "POST",
+      });
+      if (response.ok) window.location.href = "/";
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const shortenUrlHandler = async () => {
+    shortenDiv.classList.remove("hidden");
+    shortenCopyBtn.setAttribute("disabled", true);
+    shortenResult.innerHTML = "Creating short url...";
+    const url = document.getElementById("url").value;
+    const response = await fetch("/api/v1/url/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      shortenResult.innerHTML = `<a href="{{ .Domain }}/${data.shortURL}" target="_blank">{{ .Domain }}/${data.shortURL}</a>`;
+      shortenCopyBtn.removeAttribute("disabled");
+      appendNewShortenURL(url, data.shortURL, {{ .Domain }});
+    } else {
+      shortenResult.innerHTML = "Error shortening the URL :(";
+    }
+  }
+
+  const shortenCopyHandler = () => {
+    const range = document.createRange();
+    range.selectNode(shortenResult);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    alert("Link copied to clipboard");
+    window.getSelection().removeAllRanges();
+  }
+
+  const appendNewShortenURL = (longUrl, shortUrl, domain) => {
+    const tr = document.createElement("tr");
+    tr.classList.add("border-b", "bg-gray-800", "border-gray-700", "py-2");
+
+    const longUrlTd = document.createElement("td");
+    longUrlTd.classList.add("p-2", "underline", "overflow-x-auto");
+    const longUrlLink = document.createElement("a");
+    longUrlLink.setAttribute("target", "_blank");
+    longUrlLink.setAttribute("href", longUrl);
+    longUrlLink.textContent = longUrl;
+    longUrlTd.appendChild(longUrlLink);
+
+    const shortUrlTd = document.createElement("td");
+    shortUrlTd.classList.add("pr-4", "p-2", "overflow-x-auto", "underline");
+    const shortUrlLink = document.createElement("a");
+    shortUrlLink.setAttribute("target", "_blank");
+    shortUrlLink.setAttribute("href", `${domain}/${shortUrl}`);
+    shortUrlLink.textContent = `${domain}/${shortUrl}`;
+    shortUrlTd.appendChild(shortUrlLink);
+
+    const buttonTd = document.createElement("td");
+    buttonTd.classList.add("p-2", "text-center");
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add(
+        "text-white",
+        "focus:outline-none",
+        "focus:ring-4",
+        "font-medium",
+        "rounded-lg",
+        "text-sm",
+        "px-4",
+        "py-2",
+        "bg-gray-700",
+        "hover:bg-gray-500",
+        "focus:ring-gray-600",
+        "border-gray-600"
+    );
+    deleteButton.setAttribute("onclick", "removeShortenURL(event)");
+    buttonTd.appendChild(deleteButton);
+
+    tr.appendChild(longUrlTd);
+    tr.appendChild(shortUrlTd);
+    tr.appendChild(buttonTd);
+
+    shortenTableBody.appendChild(tr);
+  };
+
+  const removeShortenURL = async (btn) => {
+    const shortUrl = btn.target.parentElement.previousElementSibling.children[0].href.split("/").pop();
+    btn.target.setAttribute("disabled", true);
+    const response = await fetch(`/api/v1/url/${shortUrl}`, {
+      method: "DELETE"
+    });
+
+    if (response.ok) {
+      // If the response is ok, remove the row from the table
+      btn.target.parentElement.parentElement.remove();
+    } else {
+      btn.target.setAttribute("disabled", false);
+      alert("Error deleting the URL");
+    }
+  }
+
+  logoutBtn.addEventListener("click", logoutHandler);
+  shortenBtn.addEventListener("click", shortenUrlHandler);
+  shortenCopyBtn.addEventListener("click", shortenCopyHandler)
+</script>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="favicon.svg" type="image/x-icon" />
+    <title>Document</title>
+  </head>
+  <body class="bg-gray-900">
+    <!-- Create a simple login form -->
+    <div class="flex items-center mx-4 justify-center min-h-screen">
+      <div
+        class="relative w-full max-w-md p-8 bg-gray-800 shadow-md rounded-md shadow-sm"
+      >
+        <h1 class="text-3xl font-bold text-white">Log In</h1>
+        <form action="/login" method="POST" class="mt-5">
+          <div class="mb-4">
+            <label for="email" class="block mb-2 text-sm font-medium text-white"
+              >Email</label
+            >
+            <input
+              type="email"
+              name="email"
+              placeholder="example@domain.com"
+              id="email"
+              class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              for="password"
+              class="block mb-2 text-sm font-medium text-white"
+              >Password</label
+            >
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              id="password"
+              class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div class="flex gap-x-2 justify-center items-center w-full">
+            <button
+              type="submit"
+              class="text-white transition-all ease-in 0.5 border-2 focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 bg-gray-800 hover:bg-gray-700 focus:ring-gray-700 border-gray-700 hover:border-gray-500"
+            >
+              Log In
+            </button>
+            <div class="flex items-center justify-center">
+              <a
+                class="text-white transition-all ease-in 0.5 border-2 focus:outline-none focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 bg-gray-800 hover:bg-gray-700 focus:ring-gray-700 border-gray-700 hover:border-gray-500"
+                href="/"
+                >Back Home</a
+              >
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <footer
+      class="flex flex-col md:flex-row md:gap-x-2 justify-center items-center text-center border-t-2 border-gray-500 text-gray-400 py-4"
+    >
+      <span class="text-sm"
+        >Created with PostgreSQL and Golang by
+        <a
+          target="_blank"
+          href="https://www.covicale.com/ "
+          class="text-blue-400 font-bold"
+          >Covicale</a
+        ></span
+      >
+      <span class="invisible md:visible text-sm">|</span>
+      <span class="text-sm"
+        >Repository can be found
+        <a
+          target="_blank"
+          href="https://github.com/covicale/url-shortener-go"
+          class="text-blue-400 font-bold"
+          >here</a
+        ></span
+      >
+    </footer>
+  </body>
+</html>
+
+<script>
+  // Create a function to login the user
+  const loginForm = document.querySelector("form");
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const response = await fetch("/api/v1/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (response.ok) {
+      // Redirect to home page
+      window.location.href = "/";
+    } else {
+      // Display an error message
+      const body = await response.json();
+      alert(body.error);
+    }
+  });
+</script>

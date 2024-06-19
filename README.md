@@ -53,8 +53,7 @@ If you don't want to use Docker, you can install the project manually. Pre-requi
 After launching the PostgreSQL server, you need to create a database and a user for the project. \
 There is a `internal/db/schema/schema.sql` file. You can use this file to create the database.
 
-Once the database is created, you can simply run the project with `make build && make run` if you have `make` installed. \
-If you don't have `make` installed, you can run the project with the following commands:
+Once the database is created, you can simply run the project with:
 
 ```shell
 go build -o url-shortener-go cmd/main.go

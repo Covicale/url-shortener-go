@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"regexp"
@@ -32,7 +33,7 @@ func DeleteJWTCookie() *http.Cookie {
 	return &http.Cookie{
 		Name:     "jwt-access-token",
 		Value:    "",
-		MaxAge:   -1, // 1 hour
+		MaxAge:   -1,
 		Path:     "/",
 		HttpOnly: true,
 	}
@@ -74,4 +75,14 @@ func CheckCredentialsOnRegister(credentials *types.RegisterUserRequest) error {
 	}
 
 	return nil
+}
+
+func GetUserInfoFromRequest(r *http.Request) (types.UserJWT, error) {
+	var userInfo types.UserJWT
+	userInfoJson := r.Header.Get("UserInfo")
+	if userInfoJson != "" {
+		json.Unmarshal([]byte(userInfoJson), &userInfo)
+		return userInfo, nil
+	}
+	return types.UserJWT{}, errors.New("UserInfo doesn't exist in header")
 }

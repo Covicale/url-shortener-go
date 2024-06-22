@@ -2,7 +2,7 @@ CREATE TABLE "urls" (
   "id" serial PRIMARY KEY,
   "owner_id" uuid NOT NULL,
   "short_url" varchar(7) UNIQUE NOT NULL,
-  "long_url" varchar(400) NOT NULL
+  "long_url" varchar NOT NULL
 );
 
 CREATE TABLE "users" (

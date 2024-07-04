@@ -62,9 +62,9 @@ go build -o url-shortener-go cmd/main.go
 
 # Usage
 
-In your browser, navigate to `http://localhost:${PORT}` to see the URL Shortener GO in action. \
+In your browser, navigate to `http://localhost:${PORT}` to see the URL Shortener GO in action.
 
-First, you need to register a new user. After registering, you can log in with your credentials. \
+First, you need to register a new user. After registering, you can log in with your credentials.
 
 After logging in, you can shorten URLs and see the list of shortened URLs.
 
